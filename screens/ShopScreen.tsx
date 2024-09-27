@@ -1,14 +1,10 @@
 import React from 'react';
-import { View, Text, Button } from 'react-native';
+import { View, Text } from 'react-native';
 import { StyleSheet } from 'react-native';
-function ShopScreen({ navigation }: { navigation: any }): JSX.Element {
+function ShopScreen(): JSX.Element {
   return (
     <View style={styles.container}>
       <Text>Shop Screen</Text>
-      <Button
-        title="Go back to Home"
-        onPress={() => navigation.goBack()} // Navigate back to HomeScreen
-      />
     </View>
   );
 }
