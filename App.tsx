@@ -7,12 +7,14 @@ import SettingsScreen from './screens/SettingsScreen';
 import BillingScreen from './screens/BillingScreen';
 import StoreScreen from './screens/StoreScreen';
 import MatIcon from 'react-native-vector-icons/MaterialIcons';
+import LoginScreen from './screens/LoginScreen';
+import { useSelector } from 'react-redux';
 
 const Tab = createBottomTabNavigator();
 
 // Move tabBarIcon outside the component
 const getTabBarIcon = (routeName: string) => {
-  let iconName: string;
+  let iconName;
 
   switch (routeName) {
     case 'Home':
@@ -31,27 +33,38 @@ const getTabBarIcon = (routeName: string) => {
       iconName = 'settings';
       break;
     default:
-      iconName = 'help'; // fallback icon in case none of the names match
+      iconName = 'help';
   }
 
   return (color: string, size: number) => <MatIcon name={iconName} size={size} color={color} />;
 };
 
-function App(): React.JSX.Element {
+
+function App() {
+  const user = useSelector((state: any) => state.user.user);
+
   return (
     <NavigationContainer>
       <Tab.Navigator
         screenOptions={({ route }) => ({
+          headerShown: false,
           tabBarIcon: ({ color, size }) => getTabBarIcon(route.name)(color, size),
           tabBarActiveTintColor: '#000',
           tabBarInactiveTintColor: 'gray',
         })}
       >
-        <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Shop" component={ShopScreen} />
-        <Tab.Screen name="Store" component={StoreScreen} />
-        <Tab.Screen name="Billing" component={BillingScreen} />
-        <Tab.Screen name="Settings" component={SettingsScreen} />
+        {user ? (
+          <>
+            <Tab.Screen name="Home" component={HomeScreen} />
+            <Tab.Screen name="Shop" component={ShopScreen} />
+            <Tab.Screen name="Store" component={StoreScreen} />
+            <Tab.Screen name="Billing" component={BillingScreen} />
+            <Tab.Screen name="Settings" component={SettingsScreen} />
+          </>
+        ) : (
+          <Tab.Screen name="Login" component={LoginScreen} />
+        )}
+
       </Tab.Navigator>
     </NavigationContainer>
   );
