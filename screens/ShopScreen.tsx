@@ -75,13 +75,15 @@ function ShopScreen(): JSX.Element {
           .map(([id, quantity]) => ({ productId: id, quantity })),
       };
       console.log(orderData);
-      await axios.post(`${APIroute}/order`, orderData);
-      Alert.alert('Success', 'Order placed successfully!');
+     const responce = await axios.post(`${APIroute}/order`, orderData);
+     if(responce.data.success){
+      Alert.alert('Success', responce.data.message);
+     }
       setModalVisible(false);
       setQuantities({});
     } catch (error) {
       console.error('Failed to place order:', error);
-      Alert.alert("Error", "Failed to place order. Please try again.");
+      Alert.alert('Error', 'Failed to place order. Please try again.');
     }
   }, [orderTotal, address, deliveryContactNumber, user.phone, quantities]);
 
@@ -135,11 +137,11 @@ function ShopScreen(): JSX.Element {
               />
             ))}
             <TextInput
-              placeholder='Delivery Contact Number'
+              placeholder="Delivery Contact Number"
               value={deliveryContactNumber}
               onChangeText={setDeliveryContactNumber}
               style={styles.input}
-              keyboardType='numeric'
+              keyboardType="numeric"
             />
             <View style={styles.buttonContainer}>
               <Button title="Submit" onPress={placeOrder} />

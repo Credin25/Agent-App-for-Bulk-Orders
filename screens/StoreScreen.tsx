@@ -1,67 +1,141 @@
-import React from 'react';
-import { View, Text, ScrollView } from 'react-native';
-import { StyleSheet } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, ScrollView, RefreshControl, StyleSheet, TouchableHighlight, Modal} from 'react-native';
 import { useSelector } from 'react-redux';
+import axios from 'axios';
 import APIroute from '../contants/route';
-function StoreScreen(): JSX.Element {
+import { useFocusEffect } from '@react-navigation/native';
 
+function StoreScreen(): JSX.Element {
     const { user } = useSelector((state: any) => state.user);
-    const store = user.store;
+    const store = user?.store || [];
+    const [allInfo, setAllInfo] = useState<any>({});
+    const [refreshing, setRefreshing] = useState<boolean>(false);
+    const [selectedOrder, setSelectedOrder] = useState<any>(null); // To track selected order for modal
+    const [modalVisible, setModalVisible] = useState<boolean>(false); // To control modal visibility
+
+    // Fetch data when the screen/tab is focused
+    useFocusEffect(
+        useCallback(() => {
+            fetchAllInfo();
+        }, [])
+    );
+
+    const fetchAllInfo = async () => {
+        try {
+            const response = await axios.get(`${APIroute}/sell/get-all-information/${user._id}`);
+            if (response.data.success) {
+                setAllInfo(response.data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching store info:', error);
+        }
+    };
+
+    // Function to handle pull-to-refresh
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await fetchAllInfo();
+        setRefreshing(false);
+    };
+
+    // Function to open modal with selected order details
+    const handleOrderClick = (order: any) => {
+        setSelectedOrder(order); // Set selected order
+        setModalVisible(true);   // Show modal
+    };
+
     return (
-        <ScrollView style={styles.container}>
+        <ScrollView
+            style={styles.container}
+            refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+        >
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Store</Text>
-                {store.map((item: any) => (
-                    <View style={styles.item} key={item.product}>
-                        <Text style={styles.itemName}>{item.name}</Text>
-                        <Text style={styles.itemQuantity}>Left: {item.quantity}</Text>
-                    </View>
-                ))}
+                {store.length > 0 ? (
+                    store.map((item: any) => (
+                        <View style={styles.item} key={item.product}>
+                            <Text style={styles.itemName}>{item.name}</Text>
+                            <Text style={styles.itemQuantity}>Left: {item.quantity}</Text>
+                        </View>
+                    ))
+                ) : (
+                    <Text>No items in store.</Text>
+                )}
             </View>
 
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Information</Text>
                 <View style={styles.infoItem}>
                     <Text>Today's Total Order:</Text>
-                    <Text style={styles.infoValue}>6</Text>
+                    <Text style={styles.infoValue}>{allInfo?.todaysOrders || 0}</Text>
                 </View>
                 <View style={styles.infoItem}>
-                    <Text>This Week's Total Order:</Text>
-                    <Text style={styles.infoValue}>100</Text>
+                    <Text>This Month's Total Order:</Text>
+                    <Text style={styles.infoValue}>{allInfo?.monthOrders || 0}</Text>
                 </View>
             </View>
 
             <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Products Sell Information</Text>
-                <View style={styles.item}>
-                    <Text style={styles.itemName}>Product 1</Text>
-                    <Text style={styles.itemQuantity}>Quantity: 10</Text>
-                </View>
-                <View style={styles.item}>
-                    <Text style={styles.itemName}>Product 2</Text>
-                    <Text style={styles.itemQuantity}>Quantity: 20</Text>
-                </View>
-                <View style={styles.item}>
-                    <Text style={styles.itemName}>Product 3</Text>
-                    <Text style={styles.itemQuantity}>Quantity: 30</Text>
-                </View>
+                <Text style={styles.sectionTitle}>Recent Orders</Text>
+                {allInfo?.recent5Orders?.length > 0 ? (
+                    allInfo.recent5Orders.map((order: any) => (
+                        <TouchableHighlight
+                            key={order._id}
+                            onPress={() => handleOrderClick(order)} // Trigger modal on order click
+                            underlayColor="#f0f0f0"
+                        >
+                            <View style={styles.item}>
+                                <Text>Order {order?.orderId}</Text>
+                                <Text>Amount {order?.amount}</Text>
+                            </View>
+                        </TouchableHighlight>
+                    ))
+                ) : (
+                    <Text>No recent orders found.</Text>
+                )}
             </View>
 
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Orders</Text>
-                <View style={styles.item}>
-                    <Text>Order 1</Text>
-                </View>
-                <View style={styles.item}>
-                    <Text>Order 2</Text>
-                </View>
-                <View style={styles.item}>
-                    <Text>Order 3</Text>
-                </View>
-                <View style={styles.item}>
-                    <Text>Order 4</Text>
-                </View>
-            </View>
+            {/* Modal to display selected order details */}
+            {selectedOrder && (
+              <Modal
+              visible={modalVisible}
+              animationType="slide"
+              onRequestClose={() => setModalVisible(false)}
+          >
+              <View style={styles.modalContainer}>
+                  <Text style={styles.modalTitle}>Order Details</Text>
+                  <Text>Order ID: {selectedOrder?.orderId}</Text>
+                  <Text>Amount: {selectedOrder?.amount}</Text>
+                  <Text>Customer Name: {selectedOrder?.customerName}</Text>
+                  <Text>Customer Contact: {selectedOrder?.customerContactNumber}</Text>
+                  <Text>Payment Mode: {selectedOrder?.paymentMode}</Text>
+                  <Text style={{marginTop:10}}>Products:</Text>
+                  {selectedOrder?.sellItems.map((item: any, index: number) => (
+                      <View key={index} style={styles.productRow}>
+                          <Text style={styles.productName}>
+                              {index + 1}. {item.productId.name}
+                          </Text>
+                          <Text style={styles.productQuantity}>
+                              Quantity: {item.quantity}
+                          </Text>
+                      </View>
+                  ))}
+                  <Text style={{marginTop: 10}}>
+                      Created At: {new Date(selectedOrder?.createdAt).toLocaleString()}
+                  </Text>
+                  {/* Close button with new styles */}
+                  <TouchableHighlight
+                      style={styles.closeButton}
+                      onPress={() => setModalVisible(false)}
+                      underlayColor="#0056b3"
+                  >
+                      <Text style={styles.closeButtonText}>Close</Text>
+                  </TouchableHighlight>
+              </View>
+          </Modal>
+            )}
         </ScrollView>
     );
 }
@@ -88,14 +162,6 @@ const styles = StyleSheet.create({
         padding: 10,
         marginBottom: 8,
     },
-    itemName: {
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    itemQuantity: {
-        fontSize: 14,
-        color: '#555',
-    },
     infoItem: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -106,5 +172,55 @@ const styles = StyleSheet.create({
     },
     infoValue: {
         fontWeight: 'bold',
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+        backgroundColor: '#ffffff',
+        borderRadius: 15,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5, // For Android shadow
+    },
+    modalTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 15,
+        textAlign: 'center',
+    },
+    productRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 15,
+        paddingVertical: 5,
+        width: '100%',
+    },
+    productName: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    productQuantity: {
+        fontSize: 16,
+        color: '#555',
+    },
+    closeButton: {
+        marginTop: 20,
+        padding: 10,
+        backgroundColor: '#007bff', // Button color
+        borderRadius: 5,
+        alignSelf: 'center',
+    },
+    closeButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        textAlign: 'center',
     },
 });

@@ -17,7 +17,6 @@ function HomeScreen(): JSX.Element {
       fetchProductsAndUpdateUser();
     }
   }, []);
-
   const fetchProductsAndUpdateUser = async () => {
     try {
       const updatedStore = await Promise.all(
@@ -47,7 +46,7 @@ function HomeScreen(): JSX.Element {
       <Text>Store of User:</Text>
       {products.map((product, index) => (
         <View key={index}>
-          <Text>{product.name}: {product.quantity}</Text>
+          <Text>{product.name}: {product?.quantity}</Text>
         </View>
       ))}
     </View>

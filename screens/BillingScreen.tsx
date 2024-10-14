@@ -4,8 +4,11 @@ import { Picker } from '@react-native-picker/picker';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import APIroute from '../contants/route';
+import { useDispatch } from 'react-redux';
+import { updateUser } from '../reducers/userSlice';
 function BillingScreen(): JSX.Element {
     const { user } = useSelector((state: any) => state.user);
+    const dispatch = useDispatch();
     const store = user.store;
     const [cart, setCart] = useState<{ id: string; name: string; price: number; quantity: number }[]>([]);
     const [total, setTotal] = useState<number>(0);
@@ -50,15 +53,35 @@ function BillingScreen(): JSX.Element {
         };
 
         const responce = await axios.post(`${APIroute}/sell/createBill`, body);
-        if(responce.data.success){
+        if (responce.data.success) {
             Alert.alert('Success', responce.data.message);
+            updateStore();
         }
         setCart([]);
         setTotal(0);
         setModalVisible(false);
         setCustomerInfo({ name: '', phone: '' });
     };
+    const updateStore = async () => {
+        try {
+            const updatedAgent = await axios.post(`${APIroute}/agent/updateStore/${user._id}`);
+            const updatedStore = updatedAgent.data.data.store;
+            updatedStore.forEach((item: any) => {
+                user.store.forEach((product: any) => {
+                    if (product.product === item.product) {
+                        product.quantity = item.quantity;
+                    }
+                });
+            });
+            // Dispatch action to update Redux store
+            dispatch(updateUser({ ...user, store}));
 
+        } catch (error) {
+            console.error("Error updating store:", error);
+            Alert.alert('Error', 'Could not update the store. Please try again.');
+        }
+    };
+    console.log(store);
     const renderProductItem = ({ item }: { item: { product: string; name: string; price: { agentAppPrice: number }; quantity: number } }) => (
         <View style={styles.productItem}>
             <Text>{item.name}</Text>
