@@ -57,7 +57,7 @@ function StoreScreen(): JSX.Element {
                     store.map((item: any) => (
                         <View style={styles.item} key={item.product}>
                             <Text style={styles.itemName}>{item.name}</Text>
-                            <Text style={styles.itemQuantity}>Left: {item.quantity}</Text>
+                            <Text >Left: {item.quantity}</Text>
                         </View>
                     ))
                 ) : (
@@ -122,9 +122,6 @@ function StoreScreen(): JSX.Element {
                           </Text>
                       </View>
                   ))}
-                  <Text style={{marginTop: 10}}>
-                      Created At: {new Date(selectedOrder?.createdAt).toLocaleString()}
-                  </Text>
                   {/* Close button with new styles */}
                   <TouchableHighlight
                       style={styles.closeButton}
@@ -161,6 +158,11 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         padding: 10,
         marginBottom: 8,
+    },
+    itemName:{
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 3,
     },
     infoItem: {
         flexDirection: 'row',
