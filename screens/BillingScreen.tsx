@@ -6,6 +6,7 @@ import axios from 'axios';
 import APIroute from '../contants/route';
 import { useDispatch } from 'react-redux';
 import { updateUser } from '../reducers/userSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 function BillingScreen(): JSX.Element {
     const { user } = useSelector((state: any) => state.user);
     const dispatch = useDispatch();
@@ -42,6 +43,9 @@ function BillingScreen(): JSX.Element {
     };
 
     const createNewBill = async () => {
+        console.log("dbgjhbcjhsdcsdcd")
+        const accessToken = await AsyncStorage.getItem('accessToken');
+        const refreshToken = await AsyncStorage.getItem('refreshToken');
         const sellItems = cart.map(item => ({ productId: item.id, quantity: item.quantity }));
         const body = {
             agentId: user._id,
@@ -52,7 +56,12 @@ function BillingScreen(): JSX.Element {
             paymentMode: paymentMethod,
         };
 
-        const responce = await axios.post(`${APIroute}/sell/createBill`, body);
+        const responce = await axios.post(`${APIroute}/sell/createBill`, body, {
+            headers: {
+                authorization: `${accessToken}`,
+                refreshtoken: `${refreshToken}`,
+            }
+        });
         if (responce.data.success) {
             Alert.alert('Success', responce.data.message);
             updateStore();
@@ -63,18 +72,25 @@ function BillingScreen(): JSX.Element {
         setCustomerInfo({ name: '', phone: '' });
     };
     const updateStore = async () => {
+        const accessToken = await AsyncStorage.getItem('accessToken');
+        const refreshToken = await AsyncStorage.getItem('refreshToken');
         try {
-            const updatedAgent = await axios.post(`${APIroute}/agent/updateStore/${user._id}`);
-            const updatedStore = updatedAgent.data.data.store;
-            updatedStore.forEach((item: any) => {
-                user.store.forEach((product: any) => {
-                    if (product.product === item.product) {
-                        product.quantity = item.quantity;
-                    }
-                });
+            const updatedAgent = await axios.get(`${APIroute}/agent/updateStore/${user._id}`, {
+                headers: {
+                    authorization: `${accessToken}`,
+                    refreshtoken: `${refreshToken}`,
+                }
             });
-            // Dispatch action to update Redux store
-            dispatch(updateUser({ ...user, store}));
+            // const updatedStore = updatedAgent.data.data.store;
+            // updatedStore.forEach((item: any) => {
+            //     user.store.forEach((product: any) => {
+            //         if (product.product === item.product) {
+            //             product.quantity = item.quantity;
+            //         }
+            //     });
+            // });
+            // // Dispatch action to update Redux store
+            // dispatch(updateUser({ ...user, store }));
 
         } catch (error) {
             console.error("Error updating store:", error);

@@ -1,28 +1,36 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, RefreshControl, StyleSheet, TouchableHighlight, Modal} from 'react-native';
+import { View, Text, ScrollView, RefreshControl, StyleSheet, TouchableHighlight, Modal, Alert } from 'react-native';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import APIroute from '../contants/route';
 import { useFocusEffect } from '@react-navigation/native';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 function StoreScreen(): JSX.Element {
     const { user } = useSelector((state: any) => state.user);
-    const store = user?.store || [];
+    const [store, setStore] = useState<any>([]);
     const [allInfo, setAllInfo] = useState<any>({});
     const [refreshing, setRefreshing] = useState<boolean>(false);
-    const [selectedOrder, setSelectedOrder] = useState<any>(null); // To track selected order for modal
-    const [modalVisible, setModalVisible] = useState<boolean>(false); // To control modal visibility
+    const [selectedOrder, setSelectedOrder] = useState<any>(null);
+    const [modalVisible, setModalVisible] = useState<boolean>(false);
 
     // Fetch data when the screen/tab is focused
     useFocusEffect(
         useCallback(() => {
             fetchAllInfo();
+            fetchStoreInfo();
         }, [])
     );
 
     const fetchAllInfo = async () => {
+        const accessToken = await AsyncStorage.getItem('accessToken');
+        const refreshToken = await AsyncStorage.getItem('refreshToken');
         try {
-            const response = await axios.get(`${APIroute}/sell/get-all-information/${user._id}`);
+            const response = await axios.get(`${APIroute}/sell/get-all-information/${user._id}`, {
+                headers: {
+                    authorization: `${accessToken}`,
+                    refreshtoken: `${refreshToken}`,
+                }
+            });
             if (response.data.success) {
                 setAllInfo(response.data.data);
             }
@@ -30,6 +38,23 @@ function StoreScreen(): JSX.Element {
             console.error('Error fetching store info:', error);
         }
     };
+
+    const fetchStoreInfo = async () => {
+        const accessToken = await AsyncStorage.getItem('accessToken');
+        const refreshToken = await AsyncStorage.getItem('refreshToken');
+        try {
+            const responce = await axios.get(`${APIroute}/agent/updateStore/${user._id}`, {
+                headers: {
+                    authorization: `${accessToken}`,
+                    refreshtoken: `${refreshToken}`,
+                }
+            });
+            console.log(responce.data.data.store);
+            setStore(responce.data.data.store);
+        } catch (err) {
+            Alert.alert('Error', ' Please try again.');
+        }
+    }
 
     // Function to handle pull-to-refresh
     const onRefresh = async () => {
@@ -55,8 +80,8 @@ function StoreScreen(): JSX.Element {
                 <Text style={styles.sectionTitle}>Store</Text>
                 {store.length > 0 ? (
                     store.map((item: any) => (
-                        <View style={styles.item} key={item.product}>
-                            <Text style={styles.itemName}>{item.name}</Text>
+                        <View style={styles.item} key={item?.product._id}>
+                            <Text style={styles.itemName}>{item?.product?.name}</Text>
                             <Text >Left: {item.quantity}</Text>
                         </View>
                     ))
@@ -99,39 +124,39 @@ function StoreScreen(): JSX.Element {
 
             {/* Modal to display selected order details */}
             {selectedOrder && (
-              <Modal
-              visible={modalVisible}
-              animationType="slide"
-              onRequestClose={() => setModalVisible(false)}
-          >
-              <View style={styles.modalContainer}>
-                  <Text style={styles.modalTitle}>Order Details</Text>
-                  <Text>Order ID: {selectedOrder?.orderId}</Text>
-                  <Text>Amount: {selectedOrder?.amount}</Text>
-                  <Text>Customer Name: {selectedOrder?.customerName}</Text>
-                  <Text>Customer Contact: {selectedOrder?.customerContactNumber}</Text>
-                  <Text>Payment Mode: {selectedOrder?.paymentMode}</Text>
-                  <Text style={{marginTop:10}}>Products:</Text>
-                  {selectedOrder?.sellItems.map((item: any, index: number) => (
-                      <View key={index} style={styles.productRow}>
-                          <Text style={styles.productName}>
-                              {index + 1}. {item.productId.name}
-                          </Text>
-                          <Text style={styles.productQuantity}>
-                              Quantity: {item.quantity}
-                          </Text>
-                      </View>
-                  ))}
-                  {/* Close button with new styles */}
-                  <TouchableHighlight
-                      style={styles.closeButton}
-                      onPress={() => setModalVisible(false)}
-                      underlayColor="#0056b3"
-                  >
-                      <Text style={styles.closeButtonText}>Close</Text>
-                  </TouchableHighlight>
-              </View>
-          </Modal>
+                <Modal
+                    visible={modalVisible}
+                    animationType="slide"
+                    onRequestClose={() => setModalVisible(false)}
+                >
+                    <View style={styles.modalContainer}>
+                        <Text style={styles.modalTitle}>Order Details</Text>
+                        <Text>Order ID: {selectedOrder?.orderId}</Text>
+                        <Text>Amount: {selectedOrder?.amount}</Text>
+                        <Text>Customer Name: {selectedOrder?.customerName}</Text>
+                        <Text>Customer Contact: {selectedOrder?.customerContactNumber}</Text>
+                        <Text>Payment Mode: {selectedOrder?.paymentMode}</Text>
+                        <Text style={{ marginTop: 10 }}>Products:</Text>
+                        {selectedOrder?.sellItems.map((item: any, index: number) => (
+                            <View key={index} style={styles.productRow}>
+                                <Text style={styles.productName}>
+                                    {index + 1}. {item?.productId?.name}
+                                </Text>
+                                <Text style={styles.productQuantity}>
+                                    Quantity: {item?.quantity}
+                                </Text>
+                            </View>
+                        ))}
+                        {/* Close button with new styles */}
+                        <TouchableHighlight
+                            style={styles.closeButton}
+                            onPress={() => setModalVisible(false)}
+                            underlayColor="#0056b3"
+                        >
+                            <Text style={styles.closeButtonText}>Close</Text>
+                        </TouchableHighlight>
+                    </View>
+                </Modal>
             )}
         </ScrollView>
     );
@@ -159,7 +184,7 @@ const styles = StyleSheet.create({
         padding: 10,
         marginBottom: 8,
     },
-    itemName:{
+    itemName: {
         fontSize: 16,
         fontWeight: 'bold',
         marginBottom: 3,
