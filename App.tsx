@@ -8,6 +8,7 @@ import BillingScreen from './screens/BillingScreen';
 import StoreScreen from './screens/StoreScreen';
 import MatIcon from 'react-native-vector-icons/MaterialIcons';
 import LoginScreen from './screens/LoginScreen';
+import InsuranceStack from './Navigation/Insurance';
 import { useSelector } from 'react-redux';
 
 const Tab = createBottomTabNavigator();
@@ -23,6 +24,8 @@ const getTabBarIcon = (routeName: string) => {
     case 'Shop':
       iconName = 'shopping-cart';
       break;
+    case 'Insurance':
+      iconName = 'local-hospital';
     case 'Store':
       iconName = 'store';
       break;
@@ -56,6 +59,17 @@ function App() {
         {user ? (
           <>
             <Tab.Screen name="Home" component={HomeScreen} />
+            <Tab.Screen
+              name="Insurance"
+              component={InsuranceStack}
+              options={({ route }) => ({
+                headerShown: true,
+                headerTitleAlign: "center",
+                headerTitle: "Insurance",
+                headerTitleStyle: { fontSize: 28, fontWeight: "bold" },
+              })}
+            />
+            {/* <Tab.Screen name="Insurance" component={InsuranceOptions} /> */}
             <Tab.Screen name="Shop" component={ShopScreen} />
             <Tab.Screen name="Store" component={StoreScreen} />
             <Tab.Screen name="Billing" component={BillingScreen} />
