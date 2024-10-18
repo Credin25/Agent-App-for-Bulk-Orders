@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { login } from '../reducers/userSlice';
 import APIroute from '../contants/route.js';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const LoginScreen = () => {
     const [mobile, setMobile] = useState('');
     const [password, setPassword] = useState('');
@@ -19,9 +20,11 @@ const LoginScreen = () => {
             return;
         }
         const mobileNumber = parseInt(mobile);
-        const res = await axios.get(`${APIroute}/agent?mobile=${mobileNumber}&password=${password}`);
+        const res = await axios.post(`${APIroute}/auth/login`, { platform: 'AGENT APP', phone: mobileNumber, password: password });
         if (res.data.success) {
-            dispatch(login(res.data.data));
+            AsyncStorage.setItem('accessToken', `Bearer ${res.data.data.accessToken}`);
+            AsyncStorage.setItem('refreshToken', `${res.data.data.refreshToken}`);
+            dispatch(login(res.data.data.agent));
             Alert.alert('Login Successful');
         } else {
             Alert.alert('Error', 'Invalid mobile number or password.');

@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useSelector } from 'react-redux';
 import Product from '../interfaces/ShopScreen';
 import APIroute from '../contants/route';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 function ShopScreen(): JSX.Element {
   const [products, setProducts] = useState<Product[]>([]);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
@@ -22,8 +22,15 @@ function ShopScreen(): JSX.Element {
   const user = useSelector((state: any) => state.user.user);
 
   const fetchProducts = useCallback(async () => {
+    const accessToken = await AsyncStorage.getItem('accessToken');
+    const refreshToken = await AsyncStorage.getItem('refreshToken');
     try {
-      const response = await axios.get(`${APIroute}/product`);
+      const response = await axios.get(`${APIroute}/product`, {
+        headers: {
+          authorization : accessToken,
+          refreshtoken : refreshToken
+        }
+      });
       setProducts(response.data.data.products);
     } catch (error) {
       console.error('Failed to fetch products:', error);
@@ -63,6 +70,8 @@ function ShopScreen(): JSX.Element {
   }, []);
 
   const placeOrder = useCallback(async () => {
+    const accessToken = await AsyncStorage.getItem('accessToken');
+    const refreshToken = await AsyncStorage.getItem('refreshToken');
     try {
       const orderData = {
         amount: orderTotal,
@@ -75,7 +84,12 @@ function ShopScreen(): JSX.Element {
           .map(([id, quantity]) => ({ productId: id, quantity })),
       };
       console.log(orderData);
-     const responce = await axios.post(`${APIroute}/order`, orderData);
+     const responce = await axios.post(`${APIroute}/order`, orderData, {
+       headers: {
+         authorization : accessToken,
+         refreshtoken : refreshToken
+       }
+     });
      if(responce.data.success){
       Alert.alert('Success', responce.data.message);
      }

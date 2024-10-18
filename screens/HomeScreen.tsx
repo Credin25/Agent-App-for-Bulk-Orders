@@ -6,7 +6,7 @@ import axios from 'axios';
 import APIroute from '../contants/route';
 import { updateUser } from '../reducers/userSlice';
 import Product from '../interfaces/ShopScreen';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 function HomeScreen(): JSX.Element {
   const dispatch = useDispatch();
   const user = useSelector((state: any) => state.user.user);
@@ -18,13 +18,20 @@ function HomeScreen(): JSX.Element {
     }
   }, []);
   const fetchProductsAndUpdateUser = async () => {
+    const accessToken = await AsyncStorage.getItem('accessToken');
+    const refreshToken = await AsyncStorage.getItem('refreshToken');
     try {
       const updatedStore = await Promise.all(
         user.store.map(async (product: any) => {
-          const response = await axios.get(`${APIroute}/product/${product.product}`);
+          const response = await axios.get(`${APIroute}/product/${product.product}`, {
+            headers: {
+              authorization: accessToken,
+              refreshtoken: refreshToken
+            }
+          });
           return {
-            ...product, 
-            name: response.data.data.name, 
+            ...product,
+            name: response.data.data.name,
             price: response.data.data.price,
           };
         })

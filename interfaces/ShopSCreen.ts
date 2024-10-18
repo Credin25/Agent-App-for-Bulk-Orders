@@ -12,6 +12,7 @@ interface Price {
     image: string[];
     price: Price;
     __v: number;
+    quantity: number;
   }
 export default Product;
 
