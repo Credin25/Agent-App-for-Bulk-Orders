@@ -10,6 +10,7 @@ import MatIcon from 'react-native-vector-icons/MaterialIcons';
 import LoginScreen from './screens/LoginScreen';
 import InsuranceStack from './Navigation/Insurance';
 import { useSelector } from 'react-redux';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const Tab = createBottomTabNavigator();
 
@@ -47,40 +48,41 @@ function App() {
   const user = useSelector((state: any) => state.user.user);
 
   return (
-    <NavigationContainer>
-      <Tab.Navigator
-        screenOptions={({ route }) => ({
-          headerShown: false,
-          tabBarIcon: ({ color, size }) => getTabBarIcon(route.name)(color, size),
-          tabBarActiveTintColor: '#000',
-          tabBarInactiveTintColor: 'gray',
-        })}
-      >
-        {user ? (
-          <>
-            <Tab.Screen name="Home" component={HomeScreen} />
-            <Tab.Screen
-              name="Insurance"
-              component={InsuranceStack}
-              options={({ route }) => ({
-                headerShown: true,
-                headerTitleAlign: "center",
-                headerTitle: "Insurance",
-                headerTitleStyle: { fontSize: 28, fontWeight: "bold" },
-              })}
-            />
-            {/* <Tab.Screen name="Insurance" component={InsuranceOptions} /> */}
-            <Tab.Screen name="Shop" component={ShopScreen} />
-            <Tab.Screen name="Store" component={StoreScreen} />
-            <Tab.Screen name="Billing" component={BillingScreen} />
-            <Tab.Screen name="Settings" component={SettingsScreen} />
-          </>
-        ) : (
-          <Tab.Screen name="Login" component={LoginScreen} />
-        )}
+    <GestureHandlerRootView style={{ flex: 1 }}>
 
-      </Tab.Navigator>
-    </NavigationContainer>
+
+      <NavigationContainer>
+        <Tab.Navigator
+          screenOptions={({ route }) => ({
+            headerShown: false,
+            tabBarIcon: ({ color, size }) => getTabBarIcon(route.name)(color, size),
+            tabBarActiveTintColor: '#000',
+            tabBarInactiveTintColor: 'gray',
+          })}
+        >
+          {user ? (
+            <>
+              <Tab.Screen name="Home" component={HomeScreen} />
+              <Tab.Screen
+                name="Insurance"
+                component={InsuranceStack}
+                options={({ route }) => ({
+                  headerShown: false,
+                })}
+              />
+              {/* <Tab.Screen name="Insurance" component={InsuranceOptions} /> */}
+              <Tab.Screen name="Shop" component={ShopScreen} />
+              <Tab.Screen name="Store" component={StoreScreen} />
+              <Tab.Screen name="Billing" component={BillingScreen} />
+              <Tab.Screen name="Settings" component={SettingsScreen} />
+            </>
+          ) : (
+            <Tab.Screen name="Login" component={LoginScreen} />
+          )}
+
+        </Tab.Navigator>
+      </NavigationContainer>
+    </GestureHandlerRootView>
   );
 }
 

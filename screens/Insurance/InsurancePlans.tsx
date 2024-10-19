@@ -16,14 +16,13 @@ const InsuranceOptions = () => {
     const scrollX = useRef(new Animated.Value(0)).current;
 
     const navigateToApply = (plan: string) => {
-        navigate("InsuranceForm", {
+        navigate("InsuranceMain", {
             plan: plan,
         });
     };
 
     useFocusEffect(
         useCallback(() => {
-            //   setInsurance([]);
         }, []),
     );
 
