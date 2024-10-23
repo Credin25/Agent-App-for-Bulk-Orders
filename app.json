@@ -1,4 +1,9 @@
 {
   "name": "AgentAppForSell",
-  "displayName": "AgentAppForSell"
+  "displayName": "Agent App",
+  "extra": {
+    "eas": {
+      "projectId": "3c87de48-342c-422e-b17a-905361089faf"
+    }
+  }
 }
