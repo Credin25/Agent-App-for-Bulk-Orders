@@ -56,7 +56,7 @@ function App() {
           screenOptions={({ route }) => ({
             headerShown: false,
             tabBarIcon: ({ color, size }) => getTabBarIcon(route.name)(color, size),
-            tabBarActiveTintColor: '#000',
+            tabBarActiveTintColor: '#044ca4',
             tabBarInactiveTintColor: 'gray',
           })}
         >

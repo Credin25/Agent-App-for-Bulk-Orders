@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, Alert, Image, TouchableHighlight, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { login } from '../reducers/userSlice';
 import APIroute from '../constants/route.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const Logo = require('../assets/Logo.jpg');
 const LoginScreen = () => {
     const [mobile, setMobile] = useState('');
     const [password, setPassword] = useState('');
@@ -33,7 +35,7 @@ const LoginScreen = () => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Login</Text>
+            <Image source={Logo} style={styles.logo} />
             <TextInput
                 style={styles.input}
                 placeholder="Mobile Number"
@@ -48,7 +50,9 @@ const LoginScreen = () => {
                 value={password}
                 onChangeText={setPassword}
             />
-            <Button title="Login" onPress={handleLogin} />
+            <TouchableOpacity style={styles.button} onPress={handleLogin}>
+                <Text style={styles.buttonText}>Login</Text>
+            </TouchableOpacity>
         </View>
     );
 };
@@ -57,8 +61,25 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
+        alignItems: 'center',
         padding: 20,
         backgroundColor: '#fff',
+    },
+    logo: {
+        width: 300,
+        height: undefined,
+        aspectRatio: 3,
+        resizeMode: 'contain',
+        marginBottom: 40,
+    },
+    input: {
+        width: '100%',
+        height: 50,
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 5,
+        marginBottom: 15,
+        paddingHorizontal: 10,
     },
     title: {
         fontSize: 24,
@@ -66,13 +87,18 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         textAlign: 'center',
     },
-    input: {
-        height: 50,
-        borderColor: '#ccc',
-        borderWidth: 1,
+    button: {
+        backgroundColor: '#044ca4',  
+        paddingVertical: 10,
+        paddingHorizontal: 50,
         borderRadius: 5,
-        marginBottom: 15,
-        paddingHorizontal: 10,
+        width: '100%',
+        alignItems: 'center',
+    },
+    buttonText: {
+        color: '#fff',  
+        fontSize: 18,
+        fontWeight: 'bold',
     },
 });
 

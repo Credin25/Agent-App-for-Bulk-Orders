@@ -55,7 +55,7 @@ function SettingsScreen(): JSX.Element {
                     style={styles.option}
                     onPress={() => handleOptionPress(option.id)}
                 >
-                    <MatIcon name={option.icon} size={30} color="#87ceeb" />
+                    <MatIcon name={option.icon} size={30} color="#044ca4" />
                     <Text style={styles.optionText}>{option.name}</Text>
                 </TouchableOpacity>
             ))}
