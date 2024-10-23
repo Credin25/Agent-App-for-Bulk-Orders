@@ -3,7 +3,7 @@ import { View, Text, Button, FlatList, StyleSheet, TextInput, Modal, Alert } fro
 import { Picker } from '@react-native-picker/picker';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
-import APIroute from '../contants/route';
+import APIroute from '../constants/route';
 import { useDispatch } from 'react-redux';
 import { updateUser } from '../reducers/userSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';

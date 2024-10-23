@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, RefreshControl, StyleSheet, TouchableHighlight, Modal, Alert } from 'react-native';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
-import APIroute from '../contants/route';
+import APIroute from '../constants/route';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 function StoreScreen(): JSX.Element {

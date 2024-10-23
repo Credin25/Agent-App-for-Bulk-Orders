@@ -3,7 +3,7 @@ import { View, Text, Image, FlatList, Pressable, StyleSheet, Dimensions, Touchab
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import Product from '../interfaces/ShopScreen';
-import APIroute from '../contants/route';
+import APIroute from '../constants/route';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 function ShopScreen(): JSX.Element {
   const [products, setProducts] = useState<Product[]>([]);

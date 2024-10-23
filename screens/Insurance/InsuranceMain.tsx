@@ -10,10 +10,11 @@ import MatIcon from 'react-native-vector-icons/MaterialIcons';
 import ImagePicker from 'react-native-image-crop-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import APIroute from '../../contants/route';
-
+import APIroute from '../../constants/route';
+import boxes from '../../constants/insuranceplans';
 // Type definitions
 interface InsuranceData {
+  customerName: string;
   insuranceFor: string;
   name: string;
   dob: string;
@@ -44,6 +45,7 @@ type RootStackParamList = {
 type InsuranceMainRouteProp = RouteProp<RootStackParamList, 'InsuranceMain'>;
 
 const INITIAL_INSURANCE_DATA: InsuranceData = {
+  customerName: '',
   insuranceFor: '',
   name: '',
   dob: '',
@@ -70,7 +72,7 @@ const INITIAL_NOMINEE_DATA: Nominee = {
 export default function InsuranceMain() {
   const route = useRoute<InsuranceMainRouteProp>();
   const { plan } = route.params;
-
+  const PlanDetails = boxes.filter(box => box.label === plan);
   const [insuranceData, setInsuranceData] = useState<InsuranceData>(INITIAL_INSURANCE_DATA);
   const [aadharFront, setAadharFront] = useState<string | null>(null);
   const [aadharBack, setAadharBack] = useState<string | null>(null);
@@ -160,7 +162,7 @@ export default function InsuranceMain() {
     try {
       console.log(insuranceData);
       Alert.alert('Success', 'Insurance form submitted successfully');
-      setInsuranceData(INITIAL_INSURANCE_DATA);                                                                      
+      setInsuranceData(INITIAL_INSURANCE_DATA);
       setNomineeModalVisible(false);
     } catch (error) {
       console.error('Submit error:', error);
@@ -244,7 +246,13 @@ export default function InsuranceMain() {
       <Text style={styles.planText}>Selected Plan: {plan}</Text>
 
       <Text style={styles.sectionTitle}>Customer Details</Text>
-
+      <TextInput
+        placeholder="Customer Buying Plan"
+        value={insuranceData.customerName}
+        onChangeText={(value) => handleInputChange("customerName", value)}
+        style={styles.input}
+        keyboardType='default'
+      />
       <View style={styles.pickerContainer}>
         <Picker
           selectedValue={insuranceData.insuranceFor}
@@ -252,6 +260,7 @@ export default function InsuranceMain() {
           style={styles.picker}
         >
           <Picker.Item label="Insurance For" value="" />
+          <Picker.Item label="Self" value="self" />
           <Picker.Item label="Spouse" value="spouse" />
           <Picker.Item label="Father" value="father" />
           <Picker.Item label="Mother" value="mother" />
@@ -461,8 +470,8 @@ export default function InsuranceMain() {
 
 
 
-          <TouchableOpacity onPress={addNominee} >
-            <Text style={styles.nomineeButtonText}> Add New Nominee</Text>
+          <TouchableOpacity onPress={addNominee} style={styles.nomineeButton} >
+            <Text style={styles.nomineeButtonText}> Add Nominee</Text>
           </TouchableOpacity>
 
           <Button title="Submit" onPress={handleSubmitNominees} />
@@ -572,8 +581,15 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: 20,
   },
+  nomineeButton: {
+    backgroundColor: "#0A66C2",
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 10,
+  },
   nomineeButtonText: {
-    color: "#0A66C2",
+    textAlign: "center",
+    color: "white",
   },
   submitButton: {
     backgroundColor: "purple",

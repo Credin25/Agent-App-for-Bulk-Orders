@@ -3,7 +3,7 @@ import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { login } from '../reducers/userSlice';
-import APIroute from '../contants/route.js';
+import APIroute from '../constants/route.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const LoginScreen = () => {
     const [mobile, setMobile] = useState('');

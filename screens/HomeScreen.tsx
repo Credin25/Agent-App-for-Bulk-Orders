@@ -3,7 +3,7 @@ import { View, Text } from 'react-native';
 import { StyleSheet } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
-import APIroute from '../contants/route';
+import APIroute from '../constants/route';
 import { updateUser } from '../reducers/userSlice';
 import Product from '../interfaces/ShopScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
