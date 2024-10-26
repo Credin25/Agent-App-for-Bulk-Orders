@@ -43,7 +43,6 @@ function BillingScreen(): JSX.Element {
     };
 
     const createNewBill = async () => {
-        console.log("dbgjhbcjhsdcsdcd")
         const accessToken = await AsyncStorage.getItem('accessToken');
         const refreshToken = await AsyncStorage.getItem('refreshToken');
         const sellItems = cart.map(item => ({ productId: item.id, quantity: item.quantity }));
@@ -93,11 +92,9 @@ function BillingScreen(): JSX.Element {
             // dispatch(updateUser({ ...user, store }));
 
         } catch (error) {
-            console.error("Error updating store:", error);
             Alert.alert('Error', 'Could not update the store. Please try again.');
         }
     };
-    console.log(store);
     const renderProductItem = ({ item }: { item: { product: string; name: string; price: { agentAppPrice: number }; quantity: number } }) => (
         <View style={styles.productItem}>
             <Text>{item.name}</Text>

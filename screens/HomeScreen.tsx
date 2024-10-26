@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, ToastAndroid } from 'react-native';
 import { StyleSheet } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
@@ -43,7 +43,7 @@ function HomeScreen(): JSX.Element {
       dispatch(updateUser({ ...user, store: updatedStore }));
 
     } catch (error) {
-      console.error('Error fetching product details:', error);
+      ToastAndroid.show('Error fetching product details', ToastAndroid.SHORT);
     }
   };
 

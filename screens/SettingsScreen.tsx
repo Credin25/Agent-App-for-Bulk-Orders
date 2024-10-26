@@ -42,8 +42,7 @@ function SettingsScreen(): JSX.Element {
         if (optionId === '7') { // Logout option
             handleLogout();
         } else {
-            // Handle other settings options (e.g., navigating to other screens)
-            console.log('Option pressed:', optionId);
+            Alert.alert(`Option ${optionId} pressed`);
         }
     };
 

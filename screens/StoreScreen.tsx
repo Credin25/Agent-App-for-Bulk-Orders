@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, ScrollView, RefreshControl, StyleSheet, TouchableHighlight, Modal, Alert } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, StyleSheet, TouchableHighlight, Modal, Alert, ToastAndroid } from 'react-native';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import APIroute from '../constants/route';
@@ -35,7 +35,7 @@ function StoreScreen(): JSX.Element {
                 setAllInfo(response.data.data);
             }
         } catch (error) {
-            console.error('Error fetching store info:', error);
+            ToastAndroid.show('Error fetching store info', ToastAndroid.SHORT);
         }
     };
 
@@ -49,7 +49,6 @@ function StoreScreen(): JSX.Element {
                     refreshtoken: `${refreshToken}`,
                 }
             });
-            console.log(responce.data.data.store);
             setStore(responce.data.data.store);
         } catch (err) {
             Alert.alert('Error', ' Please try again.');

@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import InsuranceOptions from "../screens/Insurance/InsurancePlans";
 import InsuranceMain from "../screens/Insurance/InsuranceMain";
 import { useNavigationState } from "@react-navigation/native";
+import NomineeForm from "../screens/Insurance/NomineeForm";
 
 const InsuranceStack = () => {
     const Stack = createNativeStackNavigator<any>();
@@ -12,7 +13,6 @@ const InsuranceStack = () => {
     });
 
     useEffect(() => {
-        console.log("Active Screen:", activeRouteName);
     }, [activeRouteName]);
 
     return (
@@ -26,6 +26,11 @@ const InsuranceStack = () => {
             <Stack.Screen
                 component={InsuranceMain}
                 name="InsuranceMain"
+                options={{ headerShown: false }}
+            />
+            <Stack.Screen
+                component={NomineeForm}
+                name="NomineeForm"
                 options={{ headerShown: false }}
             />
         </Stack.Navigator>

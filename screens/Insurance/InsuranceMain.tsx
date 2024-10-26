@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Button, Modal, PermissionsAndroid, Alert, ToastAndroid,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, PermissionsAndroid, Alert, ToastAndroid,
   ActivityIndicator
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -14,8 +15,14 @@ import APIroute from '../../constants/route';
 import boxes from '../../constants/insuranceplans';
 // Type definitions
 interface InsuranceData {
-  customerName: string;
+  customerDetails: {
+    customerName: string;
+    customerContactNumber: string;
+  };
   insuranceFor: string;
+  insuranceBy: string;
+  insurancePlan: string;
+  source: 'AGENT APP'
   name: string;
   dob: string;
   gender: string;
@@ -23,19 +30,16 @@ interface InsuranceData {
   mobile: string;
   email: string;
   aadharNumber: string;
+  aadharImage: {
+    front: string | null;
+    back: string | null;
+    ocrData: Record<string, any>;
+  };
   address: string;
   pincode: string;
   city: string;
   state: string;
   country: string;
-  nominees: Nominee[];
-}
-
-interface Nominee {
-  relationship: string;
-  name: string;
-  dob: string;
-  gender: string;
 }
 
 type RootStackParamList = {
@@ -43,33 +47,36 @@ type RootStackParamList = {
 };
 
 type InsuranceMainRouteProp = RouteProp<RootStackParamList, 'InsuranceMain'>;
-
 const INITIAL_INSURANCE_DATA: InsuranceData = {
-  customerName: '',
-  insuranceFor: '',
-  name: '',
-  dob: '',
-  gender: '',
-  occupation: '',
-  mobile: '',
-  email: '',
-  aadharNumber: '',
-  address: '',
-  pincode: '',
-  city: '',
-  state: '',
+  insuranceFor: "",
+  insuranceBy: "",
+  source: 'AGENT APP',
+  insurancePlan: "",
+  name: "",
+  dob: "",
+  gender: "",
+  occupation: "",
+  mobile: "",
+  email: "",
+  aadharNumber: "",
+  aadharImage: {
+    front: null,
+    back: null,
+    ocrData: {},
+  },
+  customerDetails: {
+    customerName: '',
+    customerContactNumber: "",
+  },
+  address: "",
+  pincode: "",
+  city: "",
+  state: "",
   country: 'India',
-  nominees: [],
-};
-
-const INITIAL_NOMINEE_DATA: Nominee = {
-  relationship: '',
-  name: '',
-  dob: '',
-  gender: '',
 };
 
 export default function InsuranceMain() {
+  const { navigate } = useNavigation<any>();
   const route = useRoute<InsuranceMainRouteProp>();
   const { plan } = route.params;
   const PlanDetails = boxes.filter(box => box.label === plan);
@@ -77,14 +84,11 @@ export default function InsuranceMain() {
   const [aadharFront, setAadharFront] = useState<string | null>(null);
   const [aadharBack, setAadharBack] = useState<string | null>(null);
   const [showCustomerDatePicker, setShowCustomerDatePicker] = useState(false);
-  const [showNomineeDatePicker, setShowNomineeDatePicker] = useState(false);
-  const [nomineeModalVisible, setNomineeModalVisible] = useState(false);
-  const [nomineeData, setNomineeData] = useState<Nominee>(INITIAL_NOMINEE_DATA);
+
   const [isLoading, setIsLoading] = useState(false);
 
   const verifyAadhar = useCallback(async () => {
     if (!aadharFront || !aadharBack) return;
-
     setIsLoading(true);
     try {
       const accessToken = await AsyncStorage.getItem('accessToken');
@@ -108,13 +112,16 @@ export default function InsuranceMain() {
         address: data.ocrData.address,
         pincode: data.ocrData.pincode,
         aadharNumber: data.aadharNumber,
+        aadharImage: {
+          front: aadharFront,
+          back: aadharBack,
+          ocrData: data.ocrData,
+        },
       }));
-
       // Handle successful verification
       ToastAndroid.show("Aadhar verified successfully", ToastAndroid.BOTTOM);
       return data?.ocrData;
     } catch (error: any) {
-      console.error('Aadhar verification error:', error);
       if (error.response?.data?.status === "Invalid Aadhar") {
         ToastAndroid.show("Invalid Aadhar", ToastAndroid.BOTTOM);
       } else {
@@ -131,46 +138,21 @@ export default function InsuranceMain() {
     }
   }, [aadharFront, aadharBack, verifyAadhar]);
 
-  const handleInputChange = useCallback((field: keyof InsuranceData, value: string) => {
-    setInsuranceData(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = useCallback((field: keyof InsuranceData | 'customerName' | 'customerContactNumber', value: string) => {
+    setInsuranceData(prev => {
+      if (field === 'customerName' || field === 'customerContactNumber') {
+        return {
+          ...prev,
+          customerDetails: {
+            ...prev.customerDetails,
+            [field]: value,
+          },
+        };
+      }
+      return { ...prev, [field]: value };
+    });
   }, []);
 
-  const handleNomineeInputChange = useCallback((field: keyof Nominee, value: string) => {
-    setNomineeData(prev => ({ ...prev, [field]: value }));
-  }, []);
-
-  const addNominee = useCallback(() => {
-    if (!validateNomineeData(nomineeData)) {
-      ToastAndroid.show("Please fill all nominee details", ToastAndroid.BOTTOM);
-      return;
-    }
-
-    setInsuranceData(prev => ({
-      ...prev,
-      nominees: [...prev.nominees, nomineeData],
-    }));
-    setNomineeData(INITIAL_NOMINEE_DATA);
-    ToastAndroid.show("Nominee added successfully", ToastAndroid.SHORT);
-  }, [nomineeData]);
-
-  const handleSubmitNominees = useCallback(async () => {
-    if (!validateInsuranceData(insuranceData)) {
-      ToastAndroid.show("Please fill all required fields", ToastAndroid.BOTTOM);
-      return;
-    }
-    setIsLoading(true);
-    try {
-      console.log(insuranceData);
-      Alert.alert('Success', 'Insurance form submitted successfully');
-      setInsuranceData(INITIAL_INSURANCE_DATA);
-      setNomineeModalVisible(false);
-    } catch (error) {
-      console.error('Submit error:', error);
-      Alert.alert('Error', 'Failed to submit insurance form');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [insuranceData]);
   const onCustomerDateChange = (event: any, selectedDate?: Date) => {
     setShowCustomerDatePicker(false);
     if (selectedDate) {
@@ -178,20 +160,10 @@ export default function InsuranceMain() {
     }
   };
 
-  const onNomineeDateChange = (event: any, selectedDate?: Date) => {
-    setShowNomineeDatePicker(false);
-    if (selectedDate) {
-      handleNomineeInputChange('dob', selectedDate.toISOString().split('T')[0]);
-    }
-  };
-  // Rest of your component remains the same...
   const showCustomerDOBPicker = () => {
     setShowCustomerDatePicker(true);
   };
 
-  const showNomineeDOBPicker = () => {
-    setShowNomineeDatePicker(true);
-  };
   const requestCameraPermission = async () => {
     try {
       const granted = await PermissionsAndroid.request(
@@ -206,14 +178,13 @@ export default function InsuranceMain() {
       );
       return granted === PermissionsAndroid.RESULTS.GRANTED;
     } catch (err) {
-      console.warn(err);
       return false; // Return false if there's an error
     }
   };
   const takePhoto = async (side: 'front' | 'back') => {
     const hasPermission = await requestCameraPermission();
     if (!hasPermission) {
-      console.log('Camera access is required to take a photo');
+      ToastAndroid.show('Camera access is required to take a photo', ToastAndroid.BOTTOM);
       return; // Exit if permission not granted
     }
     try {
@@ -224,7 +195,6 @@ export default function InsuranceMain() {
         includeBase64: true, // Include base64 for upload
       });
 
-      console.log(result);
       if (result) {
         if (side === 'front') {
           setAadharFront(result.data);
@@ -233,12 +203,18 @@ export default function InsuranceMain() {
         }
       }
     } catch (error) {
-      console.log(error);
+      ToastAndroid.show("Failed to take photo", ToastAndroid.BOTTOM);
     }
   };
+
   const handleAddNominee = () => {
-    setNomineeModalVisible(true);
+    if(!validateInsuranceData(insuranceData)) {
+      ToastAndroid.show("Please fill all the fields", ToastAndroid.BOTTOM);
+      return;
+    }
+    navigate("NomineeForm", {insuranceData: insuranceData, plan: plan});
   };
+
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -248,10 +224,17 @@ export default function InsuranceMain() {
       <Text style={styles.sectionTitle}>Customer Details</Text>
       <TextInput
         placeholder="Customer Buying Plan"
-        value={insuranceData.customerName}
-        onChangeText={(value) => handleInputChange("customerName", value)}
+        value={insuranceData.customerDetails.customerName}
+        onChangeText={(value) => handleInputChange('customerName', value)}
         style={styles.input}
         keyboardType='default'
+      />
+      <TextInput
+        placeholder="Customer Contact Number"
+        value={insuranceData.customerDetails.customerContactNumber}
+        onChangeText={(value) => handleInputChange('customerContactNumber', value)}
+        style={styles.input}
+        keyboardType='phone-pad'
       />
       <View style={styles.pickerContainer}>
         <Picker
@@ -412,82 +395,16 @@ export default function InsuranceMain() {
         style={styles.input}
       />
 
-      <TouchableOpacity onPress={handleAddNominee}>
+      <TouchableOpacity onPress={handleAddNominee} style={styles.nomineeButton}>
         <Text style={styles.nomineeButtonText}>Add Nominee</Text>
       </TouchableOpacity>
-      {/* Nominee Modal */}
-      <Modal
-        visible={nomineeModalVisible}
-        animationType="slide"
-        transparent={false}
-        onRequestClose={() => setNomineeModalVisible(false)}
-      >
-        <ScrollView contentContainerStyle={styles.container}>
-          <Text style={styles.modalTitle}>Nominee Details</Text>
-
-          <TextInput
-            placeholder="Relationship"
-            value={nomineeData.relationship}
-            onChangeText={(value) => handleNomineeInputChange("relationship", value)}
-            style={styles.input}
-          />
-
-          <TextInput
-            placeholder="Name"
-            value={nomineeData.name}
-            onChangeText={(value) => handleNomineeInputChange("name", value)}
-            style={styles.input}
-          />
-
-          <TouchableOpacity onPress={showNomineeDOBPicker}>
-            <TextInput
-              placeholder="Date of Birth"
-              value={nomineeData.dob}
-              style={styles.input}
-              editable={false}
-            />
-          </TouchableOpacity>
-
-          {showNomineeDatePicker && (
-            <DateTimePicker
-              value={nomineeData.dob ? new Date(nomineeData.dob) : new Date()}
-              display="default"
-              onChange={onNomineeDateChange}
-            />
-          )}
-
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={nomineeData.gender}
-              onValueChange={(itemValue) => handleNomineeInputChange("gender", itemValue)}
-              style={styles.picker}
-            >
-              <Picker.Item label="Gender" value="" />
-              <Picker.Item label="Male" value="male" />
-              <Picker.Item label="Female" value="female" />
-            </Picker>
-          </View>
-
-
-
-          <TouchableOpacity onPress={addNominee} style={styles.nomineeButton} >
-            <Text style={styles.nomineeButtonText}> Add Nominee</Text>
-          </TouchableOpacity>
-
-          <Button title="Submit" onPress={handleSubmitNominees} />
-        </ScrollView>
-      </Modal>
     </ScrollView>
   );
 }
 
-// Validation functions
-const validateNomineeData = (data: Nominee): boolean => {
-  return Object.values(data).every(value => value !== '');
-};
 
 const validateInsuranceData = (data: InsuranceData): boolean => {
-  const requiredFields = ['name', 'dob', 'gender', 'mobile', 'email', 'aadharNumber'];
+  const requiredFields = ['name', 'dob', 'gender', 'mobile', 'email', 'aadharNumber', 'address', 'pincode', 'city', 'state', 'country'];
   return requiredFields.every(field => data[field as keyof InsuranceData] !== '');
 };
 
@@ -611,4 +528,5 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     zIndex: 1000,
   },
+
 });

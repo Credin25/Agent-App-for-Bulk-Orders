@@ -33,7 +33,6 @@ function ShopScreen(): JSX.Element {
       });
       setProducts(response.data.data.products);
     } catch (error) {
-      console.error('Failed to fetch products:', error);
       Alert.alert('Error', 'Failed to fetch products. Please try again.');
     }
   }, []);
@@ -83,7 +82,6 @@ function ShopScreen(): JSX.Element {
           .filter(([, quantity]) => quantity > 0)
           .map(([id, quantity]) => ({ productId: id, quantity })),
       };
-      console.log(orderData);
      const responce = await axios.post(`${APIroute}/order`, orderData, {
        headers: {
          authorization : accessToken,
@@ -96,7 +94,6 @@ function ShopScreen(): JSX.Element {
       setModalVisible(false);
       setQuantities({});
     } catch (error) {
-      console.error('Failed to place order:', error);
       Alert.alert('Error', 'Failed to place order. Please try again.');
     }
   }, [orderTotal, address, deliveryContactNumber, user.phone, quantities]);
