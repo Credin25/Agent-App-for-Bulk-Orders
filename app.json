@@ -1,9 +1,13 @@
 {
   "name": "AgentAppForSell",
+  "owner": "credin_utpl",
   "displayName": "Safal Partner",
+  "android": {
+    "versionCode": 6
+  },
   "extra": {
     "eas": {
-      "projectId": "3c87de48-342c-422e-b17a-905361089faf"
+      "projectId": "de27e3be-0e22-4353-ad66-579827d5251d"
     }
   }
 }

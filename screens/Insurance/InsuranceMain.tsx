@@ -212,6 +212,14 @@ export default function InsuranceMain() {
       ToastAndroid.show("Please fill all the fields", ToastAndroid.BOTTOM);
       return;
     }
+    if(insuranceData.customerDetails.customerContactNumber.length !== 10 ) {
+      ToastAndroid.show("Please enter a valid mobile number of customer", ToastAndroid.BOTTOM);
+      return;
+    }
+    if(insuranceData.mobile.length !== 10 ) {
+      ToastAndroid.show("Please enter a valid mobile number", ToastAndroid.BOTTOM);
+      return;
+    }
     navigate("NomineeForm", {insuranceData: insuranceData, plan: plan});
   };
 

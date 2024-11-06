@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, Image, FlatList, Pressable, StyleSheet, Dimensions, TouchableOpacity, Button, TextInput, Modal, Alert } from 'react-native';
+import { View, Text, Image, FlatList, Pressable, StyleSheet, Dimensions, TouchableOpacity, Button, TextInput, Modal, Alert , ToastAndroid} from 'react-native';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import Product from '../interfaces/ShopScreen';
@@ -71,6 +71,10 @@ function ShopScreen(): JSX.Element {
   const placeOrder = useCallback(async () => {
     const accessToken = await AsyncStorage.getItem('accessToken');
     const refreshToken = await AsyncStorage.getItem('refreshToken');
+    if(orderTotal === 0){
+     ToastAndroid.show('Cart is empty, please add some items', ToastAndroid.SHORT);
+     return;
+    }
     try {
       const orderData = {
         amount: orderTotal,

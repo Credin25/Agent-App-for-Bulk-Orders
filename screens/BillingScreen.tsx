@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Button, FlatList, StyleSheet, TextInput, Modal, Alert } from 'react-native';
+import { View, Text, Button, FlatList, StyleSheet, TextInput, Modal, Alert, ToastAndroid } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
@@ -46,6 +46,18 @@ function BillingScreen(): JSX.Element {
         const accessToken = await AsyncStorage.getItem('accessToken');
         const refreshToken = await AsyncStorage.getItem('refreshToken');
         const sellItems = cart.map(item => ({ productId: item.id, quantity: item.quantity }));
+        if(!customerInfo.name || !customerInfo.phone){
+            ToastAndroid.show('Please enter customer name and phone number', ToastAndroid.SHORT);
+            return;
+        }
+        if(customerInfo.phone.length !== 10){
+            ToastAndroid.show('Please enter valid phone number', ToastAndroid.SHORT);
+            return;
+        }
+        if(total === 0){
+            ToastAndroid.show('Please add items to cart', ToastAndroid.SHORT);
+            return;
+        }
         const body = {
             agentId: user._id,
             amount: total,

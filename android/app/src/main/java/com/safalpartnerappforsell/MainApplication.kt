@@ -1,4 +1,4 @@
-package com.agentappforsell
+package com.safalpartnerappforsell
 
 import android.app.Application
 import com.facebook.react.PackageList

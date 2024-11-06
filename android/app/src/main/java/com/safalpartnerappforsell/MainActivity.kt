@@ -1,4 +1,4 @@
-package com.agentappforsell
+package com.safalpartnerappforsell
 import android.os.Bundle;
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
