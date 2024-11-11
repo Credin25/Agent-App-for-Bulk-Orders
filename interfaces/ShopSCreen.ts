@@ -1,7 +1,5 @@
 interface Price {
     safalAppPrice: number;
-    agentAppPrice: number;
-    safalBackendPrice: number;
   }
 
   interface Product {
