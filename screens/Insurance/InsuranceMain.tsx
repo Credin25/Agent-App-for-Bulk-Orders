@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, PermissionsAndroid, Alert, ToastAndroid,
-  ActivityIndicator
+  ActivityIndicator, Pressable, ActionSheetIOS, Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { RouteProp, useRoute } from '@react-navigation/native';
@@ -84,7 +84,7 @@ export default function InsuranceMain() {
   const [aadharFront, setAadharFront] = useState<string | null>(null);
   const [aadharBack, setAadharBack] = useState<string | null>(null);
   const [showCustomerDatePicker, setShowCustomerDatePicker] = useState(false);
-
+  const [isPhotoUploaded, setIsPhotoUploaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const verifyAadhar = useCallback(async () => {
@@ -178,49 +178,153 @@ export default function InsuranceMain() {
       );
       return granted === PermissionsAndroid.RESULTS.GRANTED;
     } catch (err) {
-      return false; // Return false if there's an error
+      return false; 
     }
   };
+  
+  const requestGalleryPermission = async () => {
+    try {
+      const androidVersion = Platform.Version;
+      if (androidVersion >= 33) {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
+          {
+            title: 'Gallery Permission',
+            message: 'This app needs access to your gallery.',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          }
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      } else {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+          {
+            title: 'Gallery Permission',
+            message: 'This app needs access to your gallery.',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          }
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      }
+    } catch (err) {
+      console.warn(err);
+      return false;
+    }
+  };
+  
   const takePhoto = async (side: 'front' | 'back') => {
     const hasPermission = await requestCameraPermission();
     if (!hasPermission) {
       ToastAndroid.show('Camera access is required to take a photo', ToastAndroid.BOTTOM);
-      return; // Exit if permission not granted
+      return; 
     }
     try {
       const result = await ImagePicker.openCamera({
         width: 300,
         height: 400,
         cropping: true,
-        includeBase64: true, // Include base64 for upload
+        includeBase64: true, 
       });
 
-      if (result) {
+      if (result && result.data) {
         if (side === 'front') {
           setAadharFront(result.data);
+          ToastAndroid.show('Front image uploaded successfully', ToastAndroid.SHORT);
         } else if (side === 'back') {
           setAadharBack(result.data);
+          ToastAndroid.show('Back image uploaded successfully', ToastAndroid.SHORT);
         }
       }
     } catch (error) {
       ToastAndroid.show("Failed to take photo", ToastAndroid.BOTTOM);
     }
   };
+;
+  
+  // Updated image upload function
+  const uploadImage = async (side: 'front' | 'back') => {
+    try {
+      const hasPermission = await requestGalleryPermission();  
+      if (!hasPermission) {
+        ToastAndroid.show('Gallery permission is required to upload photos', ToastAndroid.BOTTOM);
+        return;
+      }
+      const result = await ImagePicker.openPicker({
+        width: 300,
+        height: 400,
+        cropping: true,
+        includeBase64: true,
+        mediaType: 'photo',
+      });
+  
+      if (result && result.data) {
+        if (side === 'front') {
+          setAadharFront(result.data);
+          ToastAndroid.show('Front image uploaded successfully', ToastAndroid.SHORT);
+        } else if (side === 'back') {
+          setAadharBack(result.data);
+          ToastAndroid.show('Back image uploaded successfully', ToastAndroid.SHORT);
+        }
+      }
+    } catch (error: any) {
+       ToastAndroid.show("Failed to upload image", ToastAndroid.BOTTOM);
+    }
+  };
 
   const handleAddNominee = () => {
-    if(!validateInsuranceData(insuranceData)) {
+    if (!validateInsuranceData(insuranceData)) {
       ToastAndroid.show("Please fill all the fields", ToastAndroid.BOTTOM);
       return;
     }
-    if(insuranceData.customerDetails.customerContactNumber.length !== 10 ) {
+    if (insuranceData.customerDetails.customerContactNumber.length !== 10) {
       ToastAndroid.show("Please enter a valid mobile number of customer", ToastAndroid.BOTTOM);
       return;
     }
-    if(insuranceData.mobile.length !== 10 ) {
+    if (insuranceData.mobile.length !== 10) {
       ToastAndroid.show("Please enter a valid mobile number", ToastAndroid.BOTTOM);
       return;
     }
-    navigate("NomineeForm", {insuranceData: insuranceData, plan: plan});
+    navigate("NomineeForm", { insuranceData: insuranceData, plan: plan });
+  };
+  const handleButtonPress = (side: 'front' | 'back') => {
+    if (Platform.OS === 'ios') {
+      // iOS Action Sheet
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['Cancel', 'Take Photo', 'Upload Photo'],
+          cancelButtonIndex: 0,
+        },
+        (buttonIndex) => {
+          if (buttonIndex === 1) {
+            // Take photo
+            takePhoto(side);
+          } else if (buttonIndex === 2) {
+            // Upload image
+            uploadImage(side);
+            setIsPhotoUploaded(true); // Update the status to reflect upload
+          }
+        }
+      );
+    } else {
+      // Android alert prompt
+      Alert.alert(
+        "Choose an option",
+        "Do you want to take a new photo or upload an existing one?",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Take Photo", onPress: () => takePhoto(side) },
+          {
+            text: "Upload Photo", onPress: () => {
+              uploadImage(side);
+            }
+          }
+        ]
+      );
+    }
   };
 
 
@@ -322,7 +426,35 @@ export default function InsuranceMain() {
 
       <View style={styles.aadharContainer}>
         <Text style={styles.aadharLabel}>Upload Aadhar</Text>
-        <View style={styles.aadharButtonsContainer}>
+        <View style={styles.aadharButtons}>
+          <Pressable
+            style={[
+              styles.aadharButton,
+              aadharFront ? { backgroundColor: 'green' } : null,
+            ]}
+            onPress={() => handleButtonPress('front')}
+          >
+            <MatIcon name="camera-alt" size={24} color={aadharFront ? '#fff' : '#000'} />
+            <Text style={aadharFront ? { color: '#fff' } : null}>
+              {aadharFront ? "Photo Uploaded" : "Front"}
+            </Text>
+          </Pressable>
+          <Pressable
+            style={[
+              styles.aadharButton,
+              aadharBack ? { backgroundColor: 'green' } : null,
+            ]}
+            onPress={() => handleButtonPress('back')}
+          >
+            <MatIcon name="camera-alt" size={24} color={aadharBack ? '#fff' : '#000'} />
+            <Text style={aadharBack ? { color: '#fff' } : null}>
+              {aadharBack ? "Photo Uploaded" : "Back"}
+            </Text>
+          </Pressable>
+        </View>
+
+
+        {/* <View style={styles.aadharButtonsContainer}>
           <TouchableOpacity
             style={[styles.aadharButton, aadharFront ? { backgroundColor: 'green' } : null]}
             onPress={() => takePhoto('front')}
@@ -337,19 +469,20 @@ export default function InsuranceMain() {
             <MatIcon name="camera-alt" size={24} color={aadharBack ? '#fff' : '#000'} />
             <Text style={aadharBack ? { color: '#fff' } : null}>Back</Text>
           </TouchableOpacity>
-          {/* <TouchableOpacity
+          <TouchableOpacity
             style={[styles.aadharButton, insuranceData.aadharImage.front ? { backgroundColor: 'blue' } : null]}
-            onPress={() => uploadPhoto('front')}
+            onPress={() => uploadImage('front')}
           >
             <Text style={insuranceData.aadharImage.front ? { color: '#fff' } : null}>Upload Front</Text>
-          </TouchableOpacity> */}
-          {/* <TouchableOpacity
+          </TouchableOpacity>
+          <TouchableOpacity
             style={[styles.aadharButton, insuranceData.aadharImage.back ? { backgroundColor: 'blue' } : null]}
-            onPress={() => uploadPhoto('back')}
+            onPress={() => uploadImage('back')}
           >
             <Text style={insuranceData.aadharImage.back ? { color: '#fff' } : null}>Upload Back</Text>
-          </TouchableOpacity> */}
-        </View>
+          </TouchableOpacity>
+        </View> */}
+
       </View>
 
       <TextInput
@@ -416,7 +549,6 @@ const validateInsuranceData = (data: InsuranceData): boolean => {
   return requiredFields.every(field => data[field as keyof InsuranceData] !== '');
 };
 
-// Loading overlay component
 const LoadingOverlay = () => (
   <View style={styles.loadingOverlay}>
     <ActivityIndicator size="large" color="#0000ff" />
@@ -466,6 +598,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
+  aadharButtons:{
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
   aadharButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -507,7 +643,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   nomineeButton: {
-    backgroundColor: "#0A66C2",
+    backgroundColor: "#0e4985",
     padding: 10,
     borderRadius: 5,
     marginBottom: 10,
