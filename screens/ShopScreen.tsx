@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, Image, FlatList, Pressable, StyleSheet, Dimensions, TouchableOpacity, Button, TextInput, Modal, Alert , ToastAndroid} from 'react-native';
+import { View, Text, Image, FlatList, Pressable, StyleSheet, Dimensions, TouchableOpacity, Button, TextInput, Modal, Alert, ToastAndroid } from 'react-native';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import Product from '../interfaces/ShopScreen';
@@ -27,8 +27,8 @@ function ShopScreen(): JSX.Element {
     try {
       const response = await axios.get(`${APIroute}/product`, {
         headers: {
-          authorization : accessToken,
-          refreshtoken : refreshToken
+          authorization: accessToken,
+          refreshtoken: refreshToken
         }
       });
       setProducts(response.data.data.products);
@@ -56,7 +56,7 @@ function ShopScreen(): JSX.Element {
   useEffect(() => {
     const total = Object.entries(quantities).reduce((sum, [id, quantity]) => {
       const product = products.find(p => p._id === id);
-      return product ? sum + (product.price.agentAppPrice * quantity) : sum;
+      return product ? sum + (product.price.safalAppPrice * quantity) : sum;
     }, 0);
     setOrderTotal(total);
   }, [quantities, products]);
@@ -71,9 +71,9 @@ function ShopScreen(): JSX.Element {
   const placeOrder = useCallback(async () => {
     const accessToken = await AsyncStorage.getItem('accessToken');
     const refreshToken = await AsyncStorage.getItem('refreshToken');
-    if(orderTotal === 0){
-     ToastAndroid.show('Cart is empty, please add some items', ToastAndroid.SHORT);
-     return;
+    if (orderTotal === 0) {
+      ToastAndroid.show('Cart is empty, please add some items', ToastAndroid.SHORT);
+      return;
     }
     try {
       const orderData = {
@@ -86,19 +86,19 @@ function ShopScreen(): JSX.Element {
           .filter(([, quantity]) => quantity > 0)
           .map(([id, quantity]) => ({ productId: id, quantity })),
       };
-     const responce = await axios.post(`${APIroute}/order`, orderData, {
-       headers: {
-         authorization : accessToken,
-         refreshtoken : refreshToken
-       }
-     });
-     if(responce.data.success){
-      Alert.alert('Success', responce.data.message);
-     }
+      const responce = await axios.post(`${APIroute}/order`, orderData, {
+        headers: {
+          authorization: accessToken,
+          refreshtoken: refreshToken
+        }
+      });
+      if (responce.data.success) {
+        Alert.alert('Success', responce.data.message);
+      }
       setModalVisible(false);
       setQuantities({});
     } catch (error) {
-      Alert.alert('Error', 'Failed to place order. Please try again.');
+      ToastAndroid.show('Failed to place order', ToastAndroid.SHORT);
     }
   }, [orderTotal, address, deliveryContactNumber, user.phone, quantities]);
 
@@ -106,7 +106,7 @@ function ShopScreen(): JSX.Element {
     <Pressable style={styles.itemContainer}>
       <Image source={{ uri: item.image[0] || 'https://via.placeholder.com/140' }} style={styles.image} />
       <Text style={styles.productName}>{item.name}</Text>
-      <Text style={styles.productPrice}>Price: ₹{item.price.agentAppPrice}</Text>
+      <Text style={styles.productPrice}>Price: ₹{item.price.safalAppPrice}</Text>
       <View style={styles.quantityContainer}>
         <TouchableOpacity onPress={() => updateQuantity(item._id, -1)} style={styles.button}>
           <Text>-</Text>
@@ -128,10 +128,9 @@ function ShopScreen(): JSX.Element {
         numColumns={2}
         contentContainerStyle={styles.listContainer}
       />
-      <Button
-        title={`Checkout ₹${orderTotal}`}
-        onPress={() => setModalVisible(true)}
-      />
+      <Pressable onPress={() => setModalVisible(true)} style={styles.MainButton}>
+        <Text style={styles.buttonText}>Checkout ₹{orderTotal}</Text>
+      </Pressable>
       <Modal
         transparent={true}
         animationType="slide"
@@ -159,8 +158,8 @@ function ShopScreen(): JSX.Element {
               keyboardType="numeric"
             />
             <View style={styles.buttonContainer}>
-              <Button title="Submit" onPress={placeOrder} />
-              <Button title="Cancel" onPress={() => setModalVisible(false)} color="#FF0000" />
+              <Button title="Submit" onPress={placeOrder} color="#0e4985" />
+              <Button title="Cancel" onPress={() => setModalVisible(false)} color="#BB0000" />
             </View>
           </View>
         </View>
@@ -256,4 +255,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
+  MainButton: {
+    backgroundColor: '#0e4985',
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+    borderRadius: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.6,
+    shadowRadius: 6,
+    elevation: 5,
+    maxWidth: '100%',
+  },
+  buttonText: {
+    textAlign: 'center',
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  }
 });

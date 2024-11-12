@@ -1,29 +1,23 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert , Pressable} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert , Pressable, Modal, ScrollView} from 'react-native';
 import MatIcon from 'react-native-vector-icons/MaterialIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../reducers/userSlice';
-import axios from 'axios';
-import { Modal, Button } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 const settingsOptions = [
     { id: '1', name: 'Account', icon: 'account-circle' },
-    // { id: '2', name: 'Notifications', icon: 'notifications' },
-    // { id: '3', name: 'Language', icon: 'language' },
-    // { id: '4', name: 'Privacy', icon: 'lock' },
+    { id: '2', name: 'Orders', icon: 'shopping-bag' },
     { id: '5', name: 'Help & Support', icon: 'help' },
-    // { id: '6', name: 'About App', icon: 'info' },
     { id: '7', name: 'Logout', icon: 'logout' },
 ];
 
 function SettingsScreen(): JSX.Element {
+    const { navigate } = useNavigation<any>();
     const dispatch = useDispatch();
     const { user } = useSelector((state: any) => state.user);
     const [isModalVisible, setModalVisible] = React.useState(false);
     const handleLogout = async () => {
-        const accessToken = await AsyncStorage.getItem('accessToken');
-        const refreshToken = await AsyncStorage.getItem('refreshToken');
-        // Simulate logout process, e.g., clearing tokens or app state
         Alert.alert(
             'Logout',
             'Are you sure you want to log out?',
@@ -35,7 +29,7 @@ function SettingsScreen(): JSX.Element {
                         dispatch(logout());
 
                     }
-                }, // Replace the stack with LoginScreen
+                },
             ],
             { cancelable: true }
         );
@@ -48,6 +42,8 @@ function SettingsScreen(): JSX.Element {
             setModalVisible(true);
         } else if (optionId === '5') {
             handleHelpAndSupportPress();
+        }else if (optionId === '2') {
+            handleOrdersPress();
         }
         else {
             Alert.alert(`Option ${optionId} pressed`);
@@ -65,6 +61,9 @@ function SettingsScreen(): JSX.Element {
         );
     };
     
+    const handleOrdersPress = () => {
+        navigate('Orders');
+    };
 
     return (
         <View style={styles.container}>
@@ -74,7 +73,7 @@ function SettingsScreen(): JSX.Element {
                     style={styles.option}
                     onPress={() => handleOptionPress(option.id)}
                 >
-                    <MatIcon name={option.icon} size={30} color="#044ca4" />
+                    <MatIcon name={option.icon} size={30} color="#0e4985" />
                     <Text style={styles.optionText}>{option.name}</Text>
                 </TouchableOpacity>
             ))}
@@ -148,7 +147,7 @@ const styles = StyleSheet.create({
         fontSize: 22,
         fontWeight: 'bold',
         marginBottom: 15,
-        color: '#044ca4',
+        color: '#0e4985',
     },
     modalText: {
         fontSize: 16,
@@ -157,7 +156,7 @@ const styles = StyleSheet.create({
     },
     closeButton: {
         marginTop: 20,
-        backgroundColor: '#044ca4',
+        backgroundColor: '#0e4985',
         paddingVertical: 10,
         paddingHorizontal: 20,
         borderRadius: 8,

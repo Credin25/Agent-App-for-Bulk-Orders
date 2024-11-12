@@ -12,6 +12,8 @@ function StoreScreen(): JSX.Element {
     const [refreshing, setRefreshing] = useState<boolean>(false);
     const [selectedOrder, setSelectedOrder] = useState<any>(null);
     const [modalVisible, setModalVisible] = useState<boolean>(false);
+    const [modalVisible2, setModalVisible2] = useState<boolean>(false);
+    const [selectedInsurance, setSelectedInsurance] = useState<any>(null);
 
     // Fetch data when the screen/tab is focused
     useFocusEffect(
@@ -33,6 +35,7 @@ function StoreScreen(): JSX.Element {
             });
             if (response.data.success) {
                 setAllInfo(response.data.data);
+                // console.log(response.data.data);
             }
         } catch (error) {
             ToastAndroid.show('Error fetching store info', ToastAndroid.SHORT);
@@ -54,18 +57,20 @@ function StoreScreen(): JSX.Element {
             Alert.alert('Error', ' Please try again.');
         }
     }
-
-    // Function to handle pull-to-refresh
     const onRefresh = async () => {
         setRefreshing(true);
         await fetchAllInfo();
         setRefreshing(false);
     };
 
-    // Function to open modal with selected order details
     const handleOrderClick = (order: any) => {
-        setSelectedOrder(order); // Set selected order
-        setModalVisible(true);   // Show modal
+        setSelectedOrder(order);
+        setModalVisible(true);
+    };
+    const handleInsuranceClick = (insurance: any) => {
+        console.log(insurance);
+        setSelectedInsurance(insurance);
+        setModalVisible2(true);
     };
 
     return (
@@ -111,7 +116,7 @@ function StoreScreen(): JSX.Element {
                             underlayColor="#f0f0f0"
                         >
                             <View style={styles.item}>
-                                <Text>Order {order?.orderId}</Text>
+                                <Text>Order ID {order?.orderId}</Text>
                                 <Text>Amount {order?.amount}</Text>
                             </View>
                         </TouchableHighlight>
@@ -121,6 +126,31 @@ function StoreScreen(): JSX.Element {
                 )}
             </View>
 
+            <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Insurances</Text>
+                {
+                    allInfo?.allInsurances?.length > 0 ? (
+                        allInfo?.allInsurances?.map((item: any) => (
+                            <TouchableHighlight
+                                key={item._id}
+                                underlayColor="#f0f0f0"
+                                onPress={() => handleInsuranceClick(item)}
+                            >
+                                <View style={styles.item}>
+                                    <Text>Customer Name:{item?.customerDetails?.customerName}</Text>
+                                    <Text>Customer Mobile: {item?.customerDetails?.customerContactNumber}</Text>
+                                    <Text>Insurance For: {item?.insuranceFor}</Text>
+                                </View>
+                            </TouchableHighlight>
+                        ))
+                    ) : (
+                        <Text>No insurances found.</Text>
+                    )
+                }
+
+            </View>
+
+
             {/* Modal to display selected order details */}
             {selectedOrder && (
                 <Modal
@@ -129,34 +159,75 @@ function StoreScreen(): JSX.Element {
                     onRequestClose={() => setModalVisible(false)}
                 >
                     <View style={styles.modalContainer}>
-                        <Text style={styles.modalTitle}>Order Details</Text>
-                        <Text>Order ID: {selectedOrder?.orderId}</Text>
-                        <Text>Amount: {selectedOrder?.amount}</Text>
-                        <Text>Customer Name: {selectedOrder?.customerName}</Text>
-                        <Text>Customer Contact: {selectedOrder?.customerContactNumber}</Text>
-                        <Text>Payment Mode: {selectedOrder?.paymentMode}</Text>
-                        <Text style={{ marginTop: 10 }}>Products:</Text>
-                        {selectedOrder?.sellItems.map((item: any, index: number) => (
-                            <View key={index} style={styles.productRow}>
-                                <Text style={styles.productName}>
-                                    {index + 1}. {item?.productId?.name}
-                                </Text>
-                                <Text style={styles.productQuantity}>
-                                    Quantity: {item?.quantity}
-                                </Text>
-                            </View>
-                        ))}
-                        {/* Close button with new styles */}
-                        <TouchableHighlight
-                            style={styles.closeButton}
-                            onPress={() => setModalVisible(false)}
-                            underlayColor="#0056b3"
-                        >
-                            <Text style={styles.closeButtonText}>Close</Text>
-                        </TouchableHighlight>
+                        <View style={styles.modalView}>
+                            <Text style={styles.modalTitle}>Order Details</Text>
+                            <Text>Order ID: {selectedOrder?.orderId}</Text>
+                            <Text>Amount: {selectedOrder?.amount}</Text>
+                            <Text>Customer Name: {selectedOrder?.customerName}</Text>
+                            <Text>Customer Contact: {selectedOrder?.customerContactNumber}</Text>
+                            <Text>Payment Mode: {selectedOrder?.paymentMode}</Text>
+                            <Text style={{ marginTop: 10, fontSize: 15, fontWeight: 'bold', color: '#0e4985' }}>Products:</Text>
+                            {selectedOrder?.sellItems.map((item: any, index: number) => (
+                                <View key={index} style={styles.productRow}>
+                                    <Text style={styles.productName}>
+                                        {index + 1}. {item?.productId?.name}
+                                    </Text>
+                                    <Text style={styles.productQuantity}>
+                                        Quantity: {item?.quantity}
+                                    </Text>
+                                </View>
+                            ))}
+                            {/* Close button with new styles */}
+                            <TouchableHighlight
+                                style={styles.closeButton}
+                                onPress={() => setModalVisible(false)}
+                                underlayColor="#0e4985"
+                            >
+                                <Text style={styles.closeButtonText}>Close</Text>
+                            </TouchableHighlight>
+                        </View>
                     </View>
                 </Modal>
             )}
+            {
+                selectedInsurance && (
+                    <Modal
+                        visible={modalVisible2}
+                        animationType="slide"
+                        onRequestClose={() => setModalVisible2(false)} >
+                        {
+                            selectedInsurance && (
+                                <View style={styles.modalContainer}>
+                                    <View style={styles.modalView}>
+                                        <Text style={styles.modalTitle}>Insurance Details</Text>
+                                        <Text style={{ fontWeight: 'bold' }}>Plan: <Text style={{ fontWeight: 'normal' }} >{selectedInsurance?.insurancePlan}</Text></Text>
+                                        <Text style={{ fontWeight: 'bold' }}>Insurance Number:<Text style={{ fontWeight: 'normal' }} > {selectedInsurance?.insuranceNumber}</Text></Text>
+                                        <Text style={{ fontWeight: 'bold' }}>Name: <Text style={{ fontWeight: 'normal' }} >{selectedInsurance?.name}</Text></Text>
+                                        <Text style={{ fontWeight: 'bold' }}>Gender:<Text style={{ fontWeight: 'normal' }} > {selectedInsurance?.gender}</Text></Text>
+                                        <Text style={{ fontWeight: 'bold' }}>Mobile:<Text style={{ fontWeight: 'normal' }} > {selectedInsurance?.mobile}</Text></Text>
+                                        <Text style={{ fontWeight: 'bold' }}>Occupation:<Text style={{ fontWeight: 'normal' }} > {selectedInsurance?.occupation}</Text></Text>
+                                        <View>
+                                            <Text style={styles.modalTitle}>Nominee Details</Text>
+                                            <Text style={{ fontWeight: 'bold' }}>Name:<Text style={{ fontWeight: 'normal' }} > {selectedInsurance?.nomineeDetails?.name}</Text></Text>
+                                            <Text style={{ fontWeight: 'bold' }}>Gender:<Text style={{ fontWeight: 'normal' }} > {selectedInsurance?.nomineeDetails?.gender}</Text></Text>
+                                            <Text style={{ fontWeight: 'bold' }}>Age:<Text style={{ fontWeight: 'normal' }} >{selectedInsurance?.nomineeDetails?.age}</Text></Text>
+                                        </View>
+                                        <TouchableHighlight
+                                            style={styles.closeButton}
+                                            onPress={() => setModalVisible2(false)}
+                                            underlayColor="#0e4985"
+                                        >
+
+                                            <Text style={styles.closeButtonText}>Close</Text>
+                                        </TouchableHighlight>
+                                    </View>
+                                </View>
+                            )
+                        }
+
+                    </Modal>
+                )
+            }
         </ScrollView>
     );
 }
@@ -176,6 +247,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         marginBottom: 10,
+        color: '#0e4985'
     },
     item: {
         backgroundColor: '#f9f9f9',
@@ -213,13 +285,25 @@ const styles = StyleSheet.create({
         },
         shadowOpacity: 0.25,
         shadowRadius: 4,
-        elevation: 5, // For Android shadow
+        elevation: 5,
+    },
+    modalView: {
+        backgroundColor: "white",
+        padding: 20,
+        borderRadius: 15,
+        shadowOpacity: 0.25,
+        elevation: 5,
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
     },
     modalTitle: {
-        fontSize: 24,
+        fontSize: 22,
         fontWeight: 'bold',
         marginBottom: 15,
         textAlign: 'center',
+        color: '#0e4985'
     },
     productRow: {
         flexDirection: 'row',
@@ -229,9 +313,9 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     productName: {
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: 'bold',
-        color: '#333',
+        color: '#555',
     },
     productQuantity: {
         fontSize: 16,
@@ -240,7 +324,7 @@ const styles = StyleSheet.create({
     closeButton: {
         marginTop: 20,
         padding: 10,
-        backgroundColor: '#007bff', // Button color
+        backgroundColor: "#0e4985",
         borderRadius: 5,
         alignSelf: 'center',
     },

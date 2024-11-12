@@ -180,6 +180,7 @@ const NomineeForm = () => {
             }
             setNomineeData(INITIAL_NOMINEE_DATA);
             setIsMinor(false);
+            
         } catch (error) {
             Alert.alert('Error', 'Failed to add nominee details. Please try again.');
             navigate("InsuranceOptions");
@@ -307,7 +308,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
         marginBottom: 20,
         fontWeight: 'bold',
-        color: '#333',
+        color: '#0e4985',
     },
     input: {
         marginBottom: 8,
@@ -353,8 +354,8 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     nomineeButton: {
-        backgroundColor: "#0A66C2",
-        padding: 15,
+        backgroundColor: "#0e4985",
+        padding: 10,
         borderRadius: 8,
         marginTop: 20,
         shadowColor: "#000",

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Button, FlatList, StyleSheet, TextInput, Modal, Alert, ToastAndroid } from 'react-native';
+import { View, Text, Button, FlatList, StyleSheet, TextInput, Modal, Alert, ToastAndroid, Pressable } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
@@ -11,15 +11,16 @@ function BillingScreen(): JSX.Element {
     const { user } = useSelector((state: any) => state.user);
     const dispatch = useDispatch();
     const store = user.store;
+    console.log(store);
     const [cart, setCart] = useState<{ id: string; name: string; price: number; quantity: number }[]>([]);
     const [total, setTotal] = useState<number>(0);
     const [customerInfo, setCustomerInfo] = useState<{ name: string; phone: string }>({ name: '', phone: '' });
     const [paymentMethod, setPaymentMethod] = useState<string>('CASH');
     const [modalVisible, setModalVisible] = useState<boolean>(false);
 
-    const addToCart = (product: { id: string; name: string; price: { agentAppPrice: number }; quantity: number }) => {
+    const addToCart = (product: { id: string; name: string; price: { safalAppPrice: number }; quantity: number }) => {
         const existingProduct = cart.find(item => item.id === product.id);
-        const price = product.price.agentAppPrice;
+        const price = product.price.safalAppPrice;
 
         if (existingProduct) {
             setCart(prevCart =>
@@ -46,15 +47,15 @@ function BillingScreen(): JSX.Element {
         const accessToken = await AsyncStorage.getItem('accessToken');
         const refreshToken = await AsyncStorage.getItem('refreshToken');
         const sellItems = cart.map(item => ({ productId: item.id, quantity: item.quantity }));
-        if(!customerInfo.name || !customerInfo.phone){
+        if (!customerInfo.name || !customerInfo.phone) {
             ToastAndroid.show('Please enter customer name and phone number', ToastAndroid.SHORT);
             return;
         }
-        if(customerInfo.phone.length !== 10){
+        if (customerInfo.phone.length !== 10) {
             ToastAndroid.show('Please enter valid phone number', ToastAndroid.SHORT);
             return;
         }
-        if(total === 0){
+        if (total === 0) {
             ToastAndroid.show('Please add items to cart', ToastAndroid.SHORT);
             return;
         }
@@ -107,20 +108,24 @@ function BillingScreen(): JSX.Element {
             Alert.alert('Error', 'Could not update the store. Please try again.');
         }
     };
-    const renderProductItem = ({ item }: { item: { product: string; name: string; price: { agentAppPrice: number }; quantity: number } }) => (
+    const handleClearCart = async () =>{
+        setTotal(0);
+        setCart([]);
+    }
+    const renderProductItem = ({ item }: { item: { product: string; name: string; price: { safalAppPrice: number }; quantity: number } }) => (
         <View style={styles.productItem}>
-            <Text>{item.name}</Text>
-            <Text>₹{item.price.agentAppPrice}</Text>
-            <Button title="Add" onPress={() => addToCart({ id: item.product, name: item.name, price: item.price, quantity: item.quantity })} />
+            <Text>{item?.name}</Text>
+            <Text>₹{item?.price?.safalAppPrice}</Text>
+            <Button title="Add" onPress={() => addToCart({ id: item.product, name: item.name, price: item.price, quantity: item.quantity })} color="#0e4985" />
         </View>
     );
 
     const renderCartItem = ({ item }: { item: { id: string; name: string; price: number; quantity: number } }) => (
         <View style={styles.cartItem}>
-            <Text>{item.name}</Text>
+            <Text>{item?.name}</Text>
             <Text>Quantity: {item.quantity}</Text>
             <Text>₹{item.price * item.quantity}</Text>
-            <Button title="Remove" onPress={() => removeFromCart(item.id)} />
+            <Button title="Remove" onPress={() => removeFromCart(item.id)} color="#0e4985" />
         </View>
     );
 
@@ -145,8 +150,8 @@ function BillingScreen(): JSX.Element {
                 <Text style={styles.totalText}>Total Amount: ₹{total}</Text>
             </View>
             <View style={styles.buttonContainer}>
-                <Button title="Create Bill" onPress={() => setModalVisible(true)} />
-                <Button title="New Bill" onPress={() => setCart([])} />
+                <Button title="Create Bill" onPress={() => setModalVisible(true)} color="#0e4985"/>
+                <Button title="Clear Cart" onPress={handleClearCart} color="#0e4985" />
             </View>
 
             {/* Modal for Customer Info and Payment Method */}
@@ -184,8 +189,8 @@ function BillingScreen(): JSX.Element {
                         </Picker>
 
                         <View style={styles.modalButtonContainer}>
-                            <Button title="Submit" onPress={createNewBill} />
-                            <Button title="Cancel" onPress={() => setModalVisible(false)} />
+                            <Button title="Submit" onPress={createNewBill} color="#0e4985"/>
+                            <Button title="Cancel" onPress={() => setModalVisible(false)} color="#BB0000" />
                         </View>
                     </View>
                 </View>
@@ -297,5 +302,25 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         width: '100%',
+    },
+    button: {
+        backgroundColor: '#0e4985',
+        paddingVertical: 8,
+        paddingHorizontal: 24,
+        borderRadius: 4,
+        alignItems: 'center',
+        flexDirection: 'row',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 14 },
+        shadowOpacity: 0.6,
+        shadowRadius: 6,
+        elevation: 5,
+        maxWidth: '40%',
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
+        letterSpacing: 0.5,
     },
 });
