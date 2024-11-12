@@ -200,17 +200,17 @@ function StoreScreen(): JSX.Element {
                                 <View style={styles.modalContainer}>
                                     <View style={styles.modalView}>
                                         <Text style={styles.modalTitle}>Insurance Details</Text>
-                                        <Text style={{ fontWeight: 'bold' }}>Plan: <Text style={{ fontWeight: 'normal' }} >{selectedInsurance?.insurancePlan}</Text></Text>
-                                        <Text style={{ fontWeight: 'bold' }}>Insurance Number:<Text style={{ fontWeight: 'normal' }} > {selectedInsurance?.insuranceNumber}</Text></Text>
-                                        <Text style={{ fontWeight: 'bold' }}>Name: <Text style={{ fontWeight: 'normal' }} >{selectedInsurance?.name}</Text></Text>
-                                        <Text style={{ fontWeight: 'bold' }}>Gender:<Text style={{ fontWeight: 'normal' }} > {selectedInsurance?.gender}</Text></Text>
-                                        <Text style={{ fontWeight: 'bold' }}>Mobile:<Text style={{ fontWeight: 'normal' }} > {selectedInsurance?.mobile}</Text></Text>
-                                        <Text style={{ fontWeight: 'bold' }}>Occupation:<Text style={{ fontWeight: 'normal' }} > {selectedInsurance?.occupation}</Text></Text>
+                                        <Text style={{ fontWeight: 'bold' }}>Plan: <Text style={{ fontWeight: '400' }} >{selectedInsurance?.insurancePlan}</Text></Text>
+                                        <Text style={{ fontWeight: 'bold' }}>Insurance Number:<Text style={{ fontWeight: '400' }} > {selectedInsurance?.insuranceNumber}</Text></Text>
+                                        <Text style={{ fontWeight: 'bold' }}>Name: <Text style={{ fontWeight: '400' }} >{selectedInsurance?.name}</Text></Text>
+                                        <Text style={{ fontWeight: 'bold' }}>Gender:<Text style={{fontWeight: '400' }} > {selectedInsurance?.gender}</Text></Text>
+                                        <Text style={{ fontWeight: 'bold' }}>Mobile:<Text style={{fontWeight: '400' }} > {selectedInsurance?.mobile}</Text></Text>
+                                        <Text style={{ fontWeight: 'bold' }}>Occupation:<Text style={{ fontWeight: '400' }} > {selectedInsurance?.occupation}</Text></Text>
                                         <View>
                                             <Text style={styles.modalTitle}>Nominee Details</Text>
-                                            <Text style={{ fontWeight: 'bold' }}>Name:<Text style={{ fontWeight: 'normal' }} > {selectedInsurance?.nomineeDetails?.name}</Text></Text>
-                                            <Text style={{ fontWeight: 'bold' }}>Gender:<Text style={{ fontWeight: 'normal' }} > {selectedInsurance?.nomineeDetails?.gender}</Text></Text>
-                                            <Text style={{ fontWeight: 'bold' }}>Age:<Text style={{ fontWeight: 'normal' }} >{selectedInsurance?.nomineeDetails?.age}</Text></Text>
+                                            <Text style={{ fontWeight: 'bold' }}>Name:<Text style={{ fontWeight: '400' }} > {selectedInsurance?.nomineeDetails?.name}</Text></Text>
+                                            <Text style={{ fontWeight: 'bold' }}>Gender:<Text style={{ fontWeight: '400' }} > {selectedInsurance?.nomineeDetails?.gender}</Text></Text>
+                                            <Text style={{ fontWeight: 'bold' }}>Age:<Text style={{ fontWeight: '400' }} >{selectedInsurance?.nomineeDetails?.age}</Text></Text>
                                         </View>
                                         <TouchableHighlight
                                             style={styles.closeButton}
