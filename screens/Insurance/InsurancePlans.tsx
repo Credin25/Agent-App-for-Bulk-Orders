@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useRef } from "react";
 import {
     View,
     Text,
@@ -104,7 +104,6 @@ const styles = StyleSheet.create({
     },
     box: {
         width: width * 0.8,
-        // height: height * 0.65,
         backgroundColor: "#fff",
         borderRadius: 20,
         justifyContent: "center",
@@ -143,7 +142,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     applyButton: {
-        backgroundColor: "#0251aa",
+        backgroundColor: "#0e4985",
         paddingVertical: 10,
         paddingHorizontal: 20,
         borderRadius: 5,
