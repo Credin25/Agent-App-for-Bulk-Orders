@@ -112,7 +112,7 @@ function StoreScreen(): JSX.Element {
                     allInfo.recent5Orders.map((order: any) => (
                         <TouchableHighlight
                             key={order._id}
-                            onPress={() => handleOrderClick(order)} // Trigger modal on order click
+                            onPress={() => handleOrderClick(order)} 
                             underlayColor="#f0f0f0"
                         >
                             <View style={styles.item}>

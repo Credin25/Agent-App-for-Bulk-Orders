@@ -181,41 +181,6 @@ export default function InsuranceMain() {
       return false; 
     }
   };
-  
-  const requestGalleryPermission = async () => {
-    try {
-      const androidVersion = Platform.Version;
-      if (androidVersion >= 33) {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
-          {
-            title: 'Gallery Permission',
-            message: 'This app needs access to your gallery.',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
-          }
-        );
-        return granted === PermissionsAndroid.RESULTS.GRANTED;
-      } else {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-          {
-            title: 'Gallery Permission',
-            message: 'This app needs access to your gallery.',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
-          }
-        );
-        return granted === PermissionsAndroid.RESULTS.GRANTED;
-      }
-    } catch (err) {
-      console.warn(err);
-      return false;
-    }
-  };
-  
   const takePhoto = async (side: 'front' | 'back') => {
     const hasPermission = await requestCameraPermission();
     if (!hasPermission) {
@@ -248,11 +213,6 @@ export default function InsuranceMain() {
   // Updated image upload function
   const uploadImage = async (side: 'front' | 'back') => {
     try {
-      const hasPermission = await requestGalleryPermission();  
-      if (!hasPermission) {
-        ToastAndroid.show('Gallery permission is required to upload photos', ToastAndroid.BOTTOM);
-        return;
-      }
       const result = await ImagePicker.openPicker({
         width: 300,
         height: 400,
